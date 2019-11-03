@@ -9,5 +9,6 @@ void loop() {
     delay(1900);
     move(-127, -127);
     delay(1900);
-    move(0, 0);
+    stopAll();
+    delay(2000);
 }
