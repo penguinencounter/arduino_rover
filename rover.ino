@@ -4,48 +4,96 @@
 int sensors[3];
 bool sensorsBits[3];
 bool senseBlack = false;
-
+long iter = 0;
+bool serialAvail = false;
+Dirs last = FORWARD;
 
 void setup() {
-    setThreshold(25);
-    Serial.begin(9600);
-    while (!Serial) {
-       ; // wait for serial port to connect. Needed for native USB
-     }
+  senseBlack = false;
+  setThreshold(20);
+  setModifiers(10, 7, 10);
+  pinMode(13, OUTPUT);
+  digitalWrite(13, HIGH);
+  delay(500);
+  digitalWrite(13, LOW);
 }
 
 void loop() {
-    char text[30] = {};
-    
-    readSensors();
-    sensorsToBools();
-    sprintf(text, "%d %d, %d %d, %d %d\n", sensors[0], sensorsBits[0], sensors[1], sensorsBits[1], sensors[2], sensorsBits[2]);
-    Serial.print(text);
-    if (!senseBlack) {
-
-        if (!sensorsBits[0] && !sensorsBits[1] && !sensorsBits[2]) {
-            move(64, 64);
-        }
-        else if (sensorsBits[0] && !sensorsBits[2]) {
-            move(255, 0);
-            while (sensorsBits[0]) {
-              readSensors();
-              sensorsToBools();
-              delay(200);         
-           }
-        }
-        else if (sensorsBits[2] && !sensorsBits[0]) {
-            move(0, 255);
-            while (sensorsBits[2]) {
-              readSensors();
-              sensorsToBools();
-              delay(200);         
-           }
-        } else {
-            stopAll();
-        }
-    } else {
-      
+  char text[30] = {};
+  bool extreme = false;
+  delay(0);
+  stopAll();
+  delay(250);
+  readSensors();
+  sensorsToBools();
+  
+  sprintf(text, "%d %d, %d %d, %d %d -", sensors[0], sensorsBits[0], sensors[1], sensorsBits[1], sensors[2], sensorsBits[2]);
+  if (serialAvail) {
+    //Serial.print(text);
+  }
+  if (!senseBlack) {  
+    if (!sensorsBits[0] && !sensorsBits[2]) { 
+     // Serial.print("forward ...\n");
+      last = FORWARD;
+      instantMove(128, 128);
+      delay(100);
+      return;
     }
-    delay(100);
+    else if (sensorsBits[0] && !sensorsBits[2]) {
+    //  Serial.print("to left of line\n"); 
+    last = LEFT;
+    instantMove(-172, 172);
+      delay(50);
+      return;
+    }
+    else if (sensorsBits[2] && !sensorsBits[0]) { 
+     // Serial.print("to right of line\n");
+     last = RIGHT;
+      instantMove(172, -172); 
+      delay(50);
+      return;
+    } else if (sensorsBits[0] && sensorsBits[1] && sensorsBits[2]) {
+      switch (last) {
+        FORWARD:
+          move(-255, -255);
+          break;
+        LEFT:
+          move(172, -172);
+          break;
+        RIGHT:
+          move(-172, 172);
+          break;     }
+    } else if (sensorsBits[0] && !sensorsBits[1] && sensorsBits[2]) {
+      digitalWrite(13, HIGH);
+      delay(250);
+      digitalWrite(13, LOW);
+      delay(250);
+      digitalWrite(13, HIGH);
+      delay(250);
+      digitalWrite(13, LOW);
+      senseBlack = true;
+      return;
+    }
+    else {
+      sensorsBits[0] = !sensorsBits[0];
+      sensorsBits[1] = !sensorsBits[1];
+      sensorsBits[2] = !sensorsBits[2];
+      if (exclusive(FORWARD)) {
+      last = FORWARD;
+      instantMove(128, 128);
+      delay(50);
+      } else if (exclusive(LEFT)) {
+        last = RIGHT;
+      instantMove(172, -172); 
+      delay(50);
+      return;
+      } else if (exclusive(RIGHT)) {
+        last = LEFT;
+    instantMove(-172, 172);
+      delay(50);
+      return;
+      }
+    }
+  } else {
+  }
 }
