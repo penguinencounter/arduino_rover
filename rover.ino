@@ -1,12 +1,15 @@
 #include "movement.h" // Movement lib
 #include "sensors.h"
+#include "lastmoves.h"
 
 int sensors[3];
 bool sensorsBits[3];
 bool senseBlack = false;
 long iter = 0;
 bool serialAvail = false;
-Dirs last = FORWARD;
+Dirs last = NONE;
+Dirs lastMovements[5] = {NONE, NONE, NONE, NONE, NONE};
+byte lastMovementsIdx = 0;
 
 void setup() {
   senseBlack = false;
@@ -53,16 +56,7 @@ void loop() {
       delay(50);
       return;
     } else if (sensorsBits[0] && sensorsBits[1] && sensorsBits[2]) {
-      switch (last) {
-        FORWARD:
-          move(-255, -255);
-          break;
-        LEFT:
-          move(172, -172);
-          break;
-        RIGHT:
-          move(-172, 172);
-          break;     }
+        
     } else if (sensorsBits[0] && !sensorsBits[1] && sensorsBits[2]) {
       digitalWrite(13, HIGH);
       delay(250);
@@ -75,7 +69,11 @@ void loop() {
       return;
     }
     else {
-      sensorsBits[0] = !sensorsBits[0];
+      
+    
+    }
+  } else {
+    sensorsBits[0] = !sensorsBits[0];
       sensorsBits[1] = !sensorsBits[1];
       sensorsBits[2] = !sensorsBits[2];
       if (exclusive(FORWARD)) {
@@ -92,8 +90,25 @@ void loop() {
     instantMove(-172, 172);
       delay(50);
       return;
-      }
-    }
-  } else {
   }
+
+
+  // Jerk the robot.
+//  lastMovements[lastMovementsIdx] = last;
+//  lastMovementsIdx ++;
+//  if (lastMovementsIdx == 5) {
+//    lastMovementsIdx = 0;
+//  }
+//  Dirs listType = listAllSame();
+//  switch (listType) {
+//    case LEFT:
+//      instantMove(-172, 172);
+//      delay(100);
+//      break;
+//    case RIGHT: 
+//      instantMove(172, -172); 
+//      delay(100);
+//      break;
+//  }
+}
 }

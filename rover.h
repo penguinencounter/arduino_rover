@@ -2,5 +2,6 @@
 enum Dirs {
   LEFT,
   RIGHT,
-  FORWARD
+  FORWARD,
+  NONE
 };
